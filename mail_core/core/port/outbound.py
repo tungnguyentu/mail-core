@@ -2,7 +2,6 @@ from typing import Protocol
 
 
 class MailCoreRepository(Protocol):
-
     def get_free_domain_name(self) -> list:
         pass
 
@@ -17,3 +16,9 @@ class MailCoreRepository(Protocol):
 
     def set_expire(self, email: str, expire: int) -> None:
         pass
+
+    def update_quota_email_limit(self, payload):
+        ...
+
+    def get_account_quota(self, payload):
+        ...
