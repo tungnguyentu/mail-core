@@ -21,3 +21,14 @@ def refill_email_service(repo=Depends(mail_core_repositry)) -> MailService:
 
 def get_expire_service(repo=Depends(mail_core_repositry)) -> MailService:
     return MailService(repo)
+
+
+def delete_email_service(repo=Depends(mail_core_repositry)) -> MailService:
+    return MailService(repo)
+
+
+def create_quota_service(repo=Depends(mail_core_repositry)) -> MailService:
+    return MailService(repo)
+
+def update_quota_service(repo=Depends(mail_core_repositry)) -> MailService:
+    return MailService(repo)

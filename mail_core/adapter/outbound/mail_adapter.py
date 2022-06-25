@@ -1,3 +1,4 @@
+import crypt
 from mail_core.adapter.outbound.database.entities import (
     VirtualDomain,
     VirtualUser,
@@ -5,27 +6,47 @@ from mail_core.adapter.outbound.database.entities import (
 )
 from mail_core.models.mail import DomainModel, MailCreatePayload
 from typing import List
-
+from config.environment import Settings
 
 class MysqlAdapter:
-    def __init__(self, session, settings) -> None:
+    def __init__(self, session, settings: Settings) -> None:
         self.session = session
         self.settings = settings
 
-    def get_email(self, email: str) -> str:
+    def get_email(self, payload) -> str:
         user = (
             self.session.query(VirtualUser)
-            .filter(VirtualUser.email == email)
+            .filter(
+                VirtualUser.account_id == payload.account_id,
+                VirtualUser.email == payload.email,
+            )
             .first()
         )
         if not user:
             return None
         return user.email
+    
+    def get_encrypt_password(self, payload):
+        password = self.settings.DEFAULT_PASSWORD
+        if payload.password:
+            password = payload.password
+        return crypt.crypt(password, crypt.mksalt(crypt.METHOD_SHA512))
 
     def get_free_domain_name(self) -> List[DomainModel]:
         results = (
             self.session.query(VirtualDomain)
             .filter(VirtualDomain.type == "free")
+            .all()
+        )
+        return [
+            DomainModel(name=result.name, domain_id=result.id)
+            for result in results
+        ]
+
+    def get_premium_domain_name(self):
+        results = (
+            self.session.query(VirtualDomain)
+            .filter(VirtualDomain.type == "premium")
             .all()
         )
         return [
@@ -53,6 +74,33 @@ class MysqlAdapter:
             .first()
         )
         return quota
+    
+    def create_quota(self, payload):
+        quota = Quota(
+            account_id=payload.account_id,
+            email_limit=payload.email_limit,
+            custom_email_limit=payload.custom_email_limit,
+            alias_limit=payload.alias_limit
+        )
+        self.session.add(quota)
+        self.session.commit()
+        return quota
+
+    def update_quota(self, payload):
+        query = self.session.query(Quota).filter(
+            Quota.account_id == payload.account_id
+        )
+        data = {}
+        if payload.email_limit:
+            data.update({"email_limit": payload.email_limit})
+        if payload.custom_email_limit:
+            data.update({"custom_email_limit": payload.custom_email_limit})
+        if payload.alias_limit:
+            data.update({"alias_limit": payload.alias_limit})
+        query.update(data)
+        self.session.commit()
+        print(data)
+
 
     def update_quota_email_limit(self, payload) -> None:
         response = (
@@ -66,7 +114,7 @@ class MysqlAdapter:
         return response
 
     def get_default_interval(self) -> int:
-        return self.settings.default_interval
+        return self.settings.DEFAULT_INTERVAL
 
     def get_expire(self, payload) -> int:
         result = (
@@ -79,7 +127,7 @@ class MysqlAdapter:
         )
         if not result:
             return None
-        return result.expire
+        return result
 
     def set_expire(self, payload) -> None:
         self.session.query(VirtualUser).filter(

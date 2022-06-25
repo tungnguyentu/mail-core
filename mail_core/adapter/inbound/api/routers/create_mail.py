@@ -5,7 +5,7 @@ from mail_core.core.port.inbound import MailUseCase
 from mail_core.adapter.inbound.api.dependencies.mail import (
     create_email_service,
 )
-from mail_core.models.mail import MailCreateResponse
+from mail_core.models.mail import MailCreateResponse, MailCreateCommand
 
 router = APIRouter()
 
@@ -19,4 +19,8 @@ def create(
     payload: CreateFreeEmailDTO,
     service: MailUseCase = Depends(create_email_service),
 ):
-    return service.create_random_email_address(payload)
+    command = MailCreateCommand(
+        account_id=payload.account_id,
+        password=None
+    )
+    return service.create_random_email_address(command)
