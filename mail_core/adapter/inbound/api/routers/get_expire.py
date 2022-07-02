@@ -14,4 +14,9 @@ def expire(
     service: MailUseCase = Depends(get_expire_service),
 ):
     command = MailExpireCommand(email=payload.email, account_id=payload.account_id)
-    return service.get_time_remaining(command)
+    response = service.get_time_remaining(command)
+    if not response.status:
+        response.status = 404
+    else:
+        response.status = 200
+    return response

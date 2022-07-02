@@ -11,12 +11,17 @@ router = APIRouter()
 
 
 @router.delete(
-    "/delete",
+    "/email",
     response_model_exclude_unset=True,
     response_model=MailDeleteResponse,
 )
-def delete(
+def delete_email(
     payload: DeleteMailDTO,
     service: MailUseCase = Depends(delete_email_service),
 ):
-    return service.delete_email(payload)
+    response = service.delete_email(payload)
+    if not response.status:
+        response.status = 404
+    else:
+        response.status = 200
+    return response

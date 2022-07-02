@@ -2,10 +2,16 @@ import string
 from random import shuffle, choice
 from datetime import datetime
 
-
+from mail_core.utils.logger import logger
 from mail_core.core.port.outbound import MailCoreRepository
 from mail_core.models.mail import (
-    MailCreateCommand,
+    DeactivateMailPayload,
+    DeactivateMailResponse,
+    MailCreateFreeCommand,
+    MailDeletePayload,
+    MailDeleteResponse,
+    MailGetQuotaCommand,
+    MailGetQuotaResponse,
     MailRefillCommand,
     MailExpireCommand,
     CreateQuotaCommand,
@@ -15,7 +21,7 @@ from mail_core.models.mail import (
     CreateQuotaPayload,
     UpdateQuotaPayload,
     QuotaModel,
-    MailCreateResponse,
+    MailCreateFreeResponse,
     MailRefillResponse,
     MailExpireResponse,
     MailCreateQuotaResponse,
@@ -27,15 +33,19 @@ class MailService:
     def __init__(self, repository: MailCoreRepository):
         self.repo = repository
 
-    def create_random_email_address(self, command: MailCreateCommand) -> MailCreateResponse:
+    def create_random_email_address(self, command: MailCreateFreeCommand) -> MailCreateFreeResponse:
         quota = self.repo.get_account_quota(command)
         if quota.email_limit == 0:
-            return MailCreateResponse(
-                message="You have reached your email limit"
+            return MailCreateFreeResponse(
+                message="You have reached your email limit",
+                status=0
             )
         domains = self.repo.get_free_domain_name()
         if not domains:
-            raise Exception("No domains found")
+            return MailCreateFreeResponse(
+                message="No free domains available",
+                status=0
+            )
         shuffle(domains)
         username = "".join(choice(string.ascii_lowercase) for _ in range(8))
         domain = choice(domains)
@@ -57,8 +67,10 @@ class MailService:
             email_limit=quota.email_limit - 1
         )
         self.repo.update_quota_email_limit(quota_payload)
-        return MailCreateResponse(
-            message="Email created",
+        logger.info(response)
+        return MailCreateFreeResponse(
+            message="Create Email Success",
+            status=1,
             email=response.email,
             expire=response.expire,
         )
@@ -79,6 +91,8 @@ class MailService:
         )
         self.repo.set_expire(payload)
         return MailRefillResponse(
+            message="Refill Email Success",
+            status=1,
             email=command.email,
             expire=expire
         )
@@ -87,31 +101,58 @@ class MailService:
         current_time = int(datetime.now().timestamp())
         result = self.repo.get_expire(command)
         if not result.expire:
-            return MailExpireResponse(remaining=0)
+            return MailExpireResponse(
+                message="Expire not found",
+                status=0
+            )
         expire = result.expire - current_time
         return MailExpireResponse(
+            message="Get Time Remaining Success",
+            status=1,
             remaining=expire
         )
 
-    def deactivate_email(self, payload) -> None:
+    def deactivate_email(self, payload: DeactivateMailPayload) -> DeactivateMailResponse:
         email = self.repo.get_email(payload)
         if not email:
-            raise Exception("Couldn't found email address")
+            return DeactivateMailResponse(
+                message="Email not found",
+                status=0
+            )
         response = self.repo.deactivate_email(payload)
-        return response
+        return DeactivateMailResponse(
+            account_id=response.account_id,
+            email=response.email,
+            message="Deactivate Email Success",
+            status=1
+        )
 
-    def delete_email(self, payload) -> None:
+    def delete_email(self, payload: MailDeletePayload) -> MailDeleteResponse:
         exist = self.repo.get_email(payload)
         if not exist:
-            return Exception("Email not found")
+            return MailDeleteResponse(
+                message="Email not found",
+                status=0
+            )
         self.repo.delete_email(payload)
+        email = self.repo.get_email(payload)
+        if email:
+            return MailDeleteResponse(
+                message="Delete Email Failed",
+                status=0
+            )
+        return MailDeleteResponse(
+            message="Delete Email Success",
+            status=1
+        )
 
     def create_account_quota(self, command: CreateQuotaCommand) -> MailCreateQuotaResponse:
         quota = self.repo.get_account_quota(command)
         if quota:
             return MailCreateQuotaResponse(
-            message="The quota for this account already exists"
-        )
+                status=0,
+                message="The quota for this account already exists"
+            )
         payload = CreateQuotaPayload(
             account_id=command.account_id,
             email_limit=command.email_limit,
@@ -120,7 +161,8 @@ class MailService:
         )
         response = self.repo.create_quota(payload)
         return MailCreateQuotaResponse(
-            message = "Create Account Quota Success",
+            message="Create Account Quota Success",
+            status=1,
             account_id=response.account_id,
             email_limit=response.email_limit,
             custom_email_limit=response.custom_email_limit,
@@ -130,7 +172,10 @@ class MailService:
     def update_account_quota(self, command: UpdateQuotaCommand) -> MailUpdateQuotaResponse:
         quota = self.repo.get_account_quota(command)
         if not quota:
-            return MailUpdateQuotaResponse(message="Quota not found")
+            return MailUpdateQuotaResponse(
+                message="Quota not found",
+                status=0
+            )
         payload = UpdateQuotaPayload(
             account_id=command.account_id,
             email_limit=command.email_limit,
@@ -140,9 +185,26 @@ class MailService:
         self.repo.update_quota(payload)
         result = self.repo.get_account_quota(command)
         return MailUpdateQuotaResponse(
-            message = "Create Account Quota Success",
+            message="Create Account Quota Success",
+            status=1,
             account_id=result.account_id,
             email_limit=result.email_limit,
             custom_email_limit=result.custom_email_limit,
             alias_limit=result.alias_limit
+        )
+
+    def get_quota(self, command: MailGetQuotaCommand) -> MailGetQuotaResponse:
+        quota = self.repo.get_account_quota(command)
+        if not quota:
+            return MailGetQuotaResponse(
+                message="Quota not found",
+                status=0
+            )
+        return MailGetQuotaResponse(
+            message="Get Quota Success",
+            status=1,
+            account_id=quota.account_id,
+            email_limit=quota.email_limit,
+            custom_email_limit=quota.custom_email_limit,
+            alias_limit=quota.alias_limit
         )

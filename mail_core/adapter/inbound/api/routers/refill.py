@@ -15,5 +15,9 @@ def refill(
     payload: RefillDTO, service: MailUseCase = Depends(refill_email_service)
 ):
     command = MailRefillCommand(email=payload.email, account_id=payload.account_id)
-    resposne = service.refill(command)
-    return resposne
+    response = service.refill(command)
+    if not response.status:
+        response.status = 404
+    else:
+        response.status = 200
+    return response

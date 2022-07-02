@@ -32,3 +32,6 @@ def create_quota_service(repo=Depends(mail_core_repositry)) -> MailService:
 
 def update_quota_service(repo=Depends(mail_core_repositry)) -> MailService:
     return MailService(repo)
+
+def get_quota_service(repo=Depends(mail_core_repositry)) -> MailService:
+    return MailService(repo)

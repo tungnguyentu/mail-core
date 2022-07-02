@@ -1,3 +1,4 @@
+from optparse import OptionParser
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 
@@ -21,15 +22,9 @@ class QuotaModel(BaseModel):
     alias_limit: Optional[int] = None
 
 
-class ServiceResponseBase(BaseModel):
-    message: Optional[str]
-
-
 ##
-class MailCreateCommand(BaseModel):
+class MailCreateFreeCommand(BaseModel):
     account_id: str
-    password: Optional[str] = None
-
 
 class MailRefillCommand(BaseModel):
     email: EmailStr
@@ -77,36 +72,63 @@ class UpdateQuotaPayload(BaseModel):
     custom_email_limit: int
     alias_limit: int
 
+class ServiceResponse(BaseModel):
+    status: Optional[int] = None
+    message: Optional[str] = None
 
 ##
-class MailCreateResponse(ServiceResponseBase):
+class MailCreateFreeResponse(ServiceResponse):
     email: Optional[EmailStr]
     expire: Optional[int]
 
 
-class MailRefillResponse(ServiceResponseBase):
+class MailRefillResponse(ServiceResponse):
+    email: Optional[EmailStr] = None
+    expire: Optional[int] = None
+
+
+class MailExpireResponse(ServiceResponse):
+    remaining: Optional[int] = None
+
+
+class MailDeletePayload(BaseModel):
+    account_id: str 
     email: EmailStr
-    expire: Optional[int]
 
 
-class MailExpireResponse(ServiceResponseBase):
-    remaining: Optional[int]
+class MailDeleteResponse(ServiceResponse):
+    account_id: Optional[str] = None
+    email: Optional[EmailStr] = None
 
 
-class MailDeleteResponse(ServiceResponseBase):
-    account_id: Optional[str]
-    email: Optional[str]
+class MailCreateQuotaResponse(ServiceResponse):
+    account_id: Optional[str] = None
+    email_limit: Optional[int] = None
+    custom_email_limit: Optional[int] = None
+    alias_limit: Optional[int] = None
 
 
-class MailCreateQuotaResponse(ServiceResponseBase):
-    account_id: Optional[str]
-    email_limit: Optional[int]
-    custom_email_limit: Optional[int]
-    alias_limit: Optional[int]
+class MailUpdateQuotaResponse(ServiceResponse):
+    account_id: Optional[str] = None
+    email_limit: Optional[int] = None
+    custom_email_limit: Optional[int] = None
+    alias_limit: Optional[int] = None
+
+class DeactivateMailPayload(BaseModel):
+    account_id: str
+    email: EmailStr
+
+class DeactivateMailResponse(ServiceResponse):
+    account_id: Optional[str] = None
+    email: Optional[EmailStr] = None
 
 
-class MailUpdateQuotaResponse(ServiceResponseBase):
-    account_id: Optional[str]
-    email_limit: Optional[int]
-    custom_email_limit: Optional[int]
-    alias_limit: Optional[int]
+class MailGetQuotaResponse(ServiceResponse):
+    account_id: Optional[str] = None 
+    email_limit: Optional[int] = None 
+    custom_email_limit: Optional[int] = None 
+    alias_limit: Optional[int] = None
+
+
+class MailGetQuotaCommand(BaseModel):
+    account_id: str

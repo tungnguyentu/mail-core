@@ -11,7 +11,7 @@ router = APIRouter()
 
 
 @router.post(
-    "/create-quota",
+    "/quota",
     response_model_exclude_unset=True,
     response_model=MailCreateQuotaResponse,
 )
@@ -25,4 +25,9 @@ def create_quota(
         custom_email_limit=payload.custom_email_limit,
         alias_limit=payload.alias_limit
     )
-    return service.create_account_quota(command)
+    response = service.create_account_quota(command)
+    if not response.status:
+        response.status = 404
+    else:
+        response.status = 201
+    return response

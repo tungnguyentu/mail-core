@@ -4,9 +4,10 @@ from mail_core.adapter.outbound.database.entities import (
     VirtualUser,
     Quota,
 )
-from mail_core.models.mail import DomainModel, MailCreatePayload
+from mail_core.models.mail import DeactivateMailPayload, DeactivateMailResponse, DomainModel, MailCreatePayload
 from typing import List
 from config.environment import Settings
+
 
 class MysqlAdapter:
     def __init__(self, session, settings: Settings) -> None:
@@ -25,7 +26,7 @@ class MysqlAdapter:
         if not user:
             return None
         return user.email
-    
+
     def get_encrypt_password(self, payload):
         password = self.settings.DEFAULT_PASSWORD
         if payload.password:
@@ -54,7 +55,7 @@ class MysqlAdapter:
             for result in results
         ]
 
-    def create_email(self, payload: MailCreatePayload) -> str:
+    def create_email(self, payload: MailCreatePayload):
         user = VirtualUser(
             account_id=payload.account_id,
             email=payload.email,
@@ -73,8 +74,10 @@ class MysqlAdapter:
             .filter(Quota.account_id == payload.account_id)
             .first()
         )
+        if not quota:
+            return None
         return quota
-    
+
     def create_quota(self, payload):
         quota = Quota(
             account_id=payload.account_id,
@@ -101,7 +104,6 @@ class MysqlAdapter:
         self.session.commit()
         print(data)
 
-
     def update_quota_email_limit(self, payload) -> None:
         response = (
             self.session.query(Quota)
@@ -116,7 +118,7 @@ class MysqlAdapter:
     def get_default_interval(self) -> int:
         return self.settings.DEFAULT_INTERVAL
 
-    def get_expire(self, payload) -> int:
+    def get_expire(self, payload):
         result = (
             self.session.query(VirtualUser.expire)
             .filter(
@@ -143,9 +145,13 @@ class MysqlAdapter:
         ).delete()
         self.session.commit()
 
-    def deactivate_email(self, payload) -> None:
+    def deactivate_email(self, payload: DeactivateMailPayload) -> DeactivateMailResponse:
         self.session.query(VirtualUser).filter(
             VirtualUser.account_id == payload.account_id,
             VirtualUser.email == payload.email,
         ).update({"active": False})
         self.session.commit()
+        return DeactivateMailResponse(
+            account_id=payload.account_id,
+            email=payload.email,
+        )

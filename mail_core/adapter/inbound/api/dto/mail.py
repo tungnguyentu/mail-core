@@ -16,6 +16,10 @@ class GetExpireDTO(BaseModel):
     email: str
 
 
+class GetQuotaDTO(BaseModel):
+    account_id: str
+
+
 class DeleteMailDTO(BaseModel):
     account_id: str
     email: str

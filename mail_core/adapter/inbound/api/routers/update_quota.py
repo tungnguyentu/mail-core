@@ -10,8 +10,8 @@ from mail_core.models.mail import MailUpdateQuotaResponse, UpdateQuotaCommand
 router = APIRouter()
 
 
-@router.post(
-    "/update-quota",
+@router.patch(
+    "/quota",
     response_model_exclude_unset=True,
     response_model=MailUpdateQuotaResponse,
 )
@@ -25,4 +25,9 @@ def update_quota(
         custom_email_limit=payload.custom_email_limit,
         alias_limit=payload.alias_limit
     )
-    return service.update_account_quota(command)
+    response = service.update_account_quota(command)
+    if not response.status:
+        response.status = 404
+    else:
+        response.status = 200
+    return response
