@@ -9,6 +9,8 @@ stages:
   - deploy-api
 
 build-job:
+  only:
+    - master
   tags:
     - "x-project"
   stage: build
@@ -20,6 +22,8 @@ build-job:
     - docker push $LATEST_TAG
 
 deploy-api-job:
+  only:
+    - master
   tags:
     - "x-project"
   stage: deploy-api
