@@ -8,7 +8,12 @@ from mail_core.models.mail import MailGetQuotaResponse, MailGetQuotaCommand
 
 router = APIRouter()
 
-@router.get("/quota", response_model_exclude_unset=True, response_model=MailGetQuotaResponse)
+
+@router.get("/quota", 
+    response_model_exclude_unset=True,
+    response_model=MailGetQuotaResponse, 
+    tags=["Quota"]
+)
 def get_quota(
     payload: GetQuotaDTO = Depends(GetQuotaDTO),
     service: MailUseCase = Depends(get_quota_service),

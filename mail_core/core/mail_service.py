@@ -1,12 +1,19 @@
 import string
 from random import shuffle, choice
 from datetime import datetime
+from typing import List
 
 from mail_core.utils.logger import logger
 from mail_core.core.port.outbound import MailCoreRepository
 from mail_core.models.mail import (
+    ActivateEmailCommand,
+    ActivateEmailResponse,
     DeactivateMailPayload,
     DeactivateMailResponse,
+    GetEmailCommand,
+    GetEmailResponse,
+    GetEmailsCommand,
+    GetEmailsResponse,
     MailCreateFreeCommand,
     MailDeletePayload,
     MailDeleteResponse,
@@ -207,4 +214,47 @@ class MailService:
             email_limit=quota.email_limit,
             custom_email_limit=quota.custom_email_limit,
             alias_limit=quota.alias_limit
+        )
+
+    def get_emails(self, command: GetEmailsCommand) -> GetEmailsResponse:
+        emails = self.repo.get_account_emails(command)
+        if not emails:
+            return GetEmailsResponse(
+                message="Emails not found",
+                status=0
+            )
+        return GetEmailsResponse(
+            message="Get Emails Success",
+            status=1,
+            emails=emails
+        )
+
+    def activate_email(self, command: ActivateEmailCommand) -> ActivateEmailResponse:
+        email = self.repo.get_email(command)
+        if not email:
+            return ActivateEmailResponse(
+                message="Email not found",
+                status=0
+            )
+        response = self.repo.activate(command)
+        return ActivateEmailResponse(
+            email=response.email,
+            message="Activate Email Success",
+            status=1
+        )
+
+    def get_email(self, command: GetEmailCommand) -> GetEmailResponse:
+        email = self.repo.get_email(command)
+        if not email:
+            return GetEmailResponse(
+                message="Email not found",
+                status=0
+            )
+        info = self.repo.get_email_info(command)
+        return GetEmailResponse(
+            email=info.email,
+            expire=info.expire,
+            active=info.active,
+            message="Get Email Success",
+            status=1
         )

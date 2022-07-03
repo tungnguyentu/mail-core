@@ -14,10 +14,11 @@ router = APIRouter()
     "/quota",
     response_model_exclude_unset=True,
     response_model=MailCreateQuotaResponse,
+    tags=["Quota"]
 )
 def create_quota(
     payload: CreateQuotaDTO,
-    service: MailUseCase = Depends(create_quota_service),
+    service: MailUseCase = Depends(create_quota_service)
 ):
     command = CreateQuotaCommand(
         account_id=payload.account_id,

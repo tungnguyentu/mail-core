@@ -10,11 +10,17 @@ from mail_core.adapter.inbound.api.dependencies.mail import (
 router = APIRouter()
 
 
-@router.post("/refill", response_model_exclude_unset=True, response_model=MailRefillResponse)
+@router.post(
+    "/refill",
+    response_model_exclude_unset=True,
+    response_model=MailRefillResponse,
+    tags=["Email"]
+)
 def refill(
     payload: RefillDTO, service: MailUseCase = Depends(refill_email_service)
 ):
-    command = MailRefillCommand(email=payload.email, account_id=payload.account_id)
+    command = MailRefillCommand(
+        email=payload.email, account_id=payload.account_id)
     response = service.refill(command)
     if not response.status:
         response.status = 404

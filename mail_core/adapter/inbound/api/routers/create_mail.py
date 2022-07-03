@@ -14,6 +14,7 @@ router = APIRouter()
     "/free-email",
     response_model_exclude_unset=True,
     response_model=MailCreateFreeResponse,
+    tags=["Email"]
 )
 def create(
     payload: CreateFreeEmailDTO,

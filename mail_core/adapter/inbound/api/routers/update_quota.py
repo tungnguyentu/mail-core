@@ -14,6 +14,7 @@ router = APIRouter()
     "/quota",
     response_model_exclude_unset=True,
     response_model=MailUpdateQuotaResponse,
+    tags=["Quota"]
 )
 def update_quota(
     payload: UpdateQuotaDTO,

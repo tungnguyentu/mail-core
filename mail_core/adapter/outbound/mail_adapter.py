@@ -4,7 +4,7 @@ from mail_core.adapter.outbound.database.entities import (
     VirtualUser,
     Quota,
 )
-from mail_core.models.mail import DeactivateMailPayload, DeactivateMailResponse, DomainModel, MailCreatePayload
+from mail_core.models.mail import ActivateEmailResponse, DeactivateMailPayload, DeactivateMailResponse, DomainModel, GetEmailResponse, GetEmailsCommand, GetEmailsResponse, MailCreatePayload
 from typing import List
 from config.environment import Settings
 
@@ -154,4 +154,51 @@ class MysqlAdapter:
         return DeactivateMailResponse(
             account_id=payload.account_id,
             email=payload.email,
+        )
+
+    def get_account_emails(self, payload):
+        results = (
+            self.session.query(VirtualUser)
+            .filter(
+                VirtualUser.account_id == payload.account_id,
+            )
+            .all()
+        )
+        if not results:
+            return None
+        return [
+            GetEmailResponse(
+                email=result.email,
+                expire=result.expire,
+                active=result.active,
+            )
+            for result in results
+        ]
+
+    def activate(self, payload) -> ActivateEmailResponse:
+        self.session.query(VirtualUser).filter(
+            VirtualUser.account_id == payload.account_id,
+            VirtualUser.email == payload.email,
+        ).update({"active": True})
+        self.session.commit()
+        return ActivateEmailResponse(
+            account_id=payload.account_id,
+            email=payload.email,
+        )
+
+    def get_email_info(self, payload) -> GetEmailResponse:
+        result = (
+            self.session.query(VirtualUser)
+            .filter(
+                VirtualUser.account_id == payload.account_id,
+                VirtualUser.email == payload.email,
+            )
+            .first()
+        )
+        if not result:
+            return None
+        return GetEmailResponse(
+            email=result.email,
+            expire=result.expire,
+            active=result.active,
         )

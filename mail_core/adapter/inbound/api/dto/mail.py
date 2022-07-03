@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from typing import Optional
 
 
@@ -37,3 +37,20 @@ class UpdateQuotaDTO(BaseModel):
     email_limit: int
     custom_email_limit: int
     alias_limit: int
+
+
+class GetEmailsDTO(BaseModel):
+    account_id: str
+
+class GetEmailDTO(BaseModel):
+    account_id: str
+    email: EmailStr
+
+class DeactivateEmailDTO(BaseModel):
+    account_id: str
+    email: EmailStr
+
+
+class ActivateEmailDTO(BaseModel):
+    account_id: str
+    email: EmailStr

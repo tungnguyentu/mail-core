@@ -30,8 +30,25 @@ def delete_email_service(repo=Depends(mail_core_repositry)) -> MailService:
 def create_quota_service(repo=Depends(mail_core_repositry)) -> MailService:
     return MailService(repo)
 
+
 def update_quota_service(repo=Depends(mail_core_repositry)) -> MailService:
     return MailService(repo)
 
+
 def get_quota_service(repo=Depends(mail_core_repositry)) -> MailService:
+    return MailService(repo)
+
+
+def get_emails_service(repo=Depends(mail_core_repositry)) -> MailService:
+    return MailService(repo)
+
+
+def deactivate_email_service(repo=Depends(mail_core_repositry)) -> MailService:
+    return MailService(repo)
+
+
+def activate_email_service(repo=Depends(mail_core_repositry)) -> MailService:
+    return MailService(repo)
+
+def get_email_service(repo=Depends(mail_core_repositry)) -> MailService:
     return MailService(repo)

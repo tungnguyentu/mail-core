@@ -2,7 +2,7 @@ from typing import Protocol
 
 
 class MailCoreRepository(Protocol):
-    
+
     def get_email(self, payload):
         ...
 
@@ -43,4 +43,13 @@ class MailCoreRepository(Protocol):
         ...
 
     def deactivate(self, payload):
+        ...
+
+    def activate(self, payload):
+        ...
+
+    def get_email_info(self, payload):
+        ...
+
+    def get_account_emails(self, payload):
         ...

@@ -8,12 +8,17 @@ from mail_core.models.mail import MailExpireCommand, MailExpireResponse
 router = APIRouter()
 
 
-@router.get("/remaining-time", response_model_exclude_unset=True, response_model=MailExpireResponse)
+@router.get("/remaining-time",
+    response_model_exclude_unset=True,
+    response_model=MailExpireResponse,
+    tags=["Email"]
+)
 def expire(
     payload: GetExpireDTO = Depends(GetExpireDTO),
     service: MailUseCase = Depends(get_expire_service),
 ):
-    command = MailExpireCommand(email=payload.email, account_id=payload.account_id)
+    command = MailExpireCommand(
+        email=payload.email, account_id=payload.account_id)
     response = service.get_time_remaining(command)
     if not response.status:
         response.status = 404

@@ -14,6 +14,7 @@ router = APIRouter()
     "/email",
     response_model_exclude_unset=True,
     response_model=MailDeleteResponse,
+    tags=["Email"]
 )
 def delete_email(
     payload: DeleteMailDTO,
