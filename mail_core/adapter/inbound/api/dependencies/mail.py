@@ -50,5 +50,10 @@ def deactivate_email_service(repo=Depends(mail_core_repositry)) -> MailService:
 def activate_email_service(repo=Depends(mail_core_repositry)) -> MailService:
     return MailService(repo)
 
+
 def get_email_service(repo=Depends(mail_core_repositry)) -> MailService:
+    return MailService(repo)
+
+
+def create_premium_email(repo=Depends(mail_core_repositry)) -> MailService:
     return MailService(repo)

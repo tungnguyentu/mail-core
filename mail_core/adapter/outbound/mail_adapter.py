@@ -1,12 +1,21 @@
 import crypt
+from typing import List
+from config.environment import Settings
 from mail_core.adapter.outbound.database.entities import (
     VirtualDomain,
     VirtualUser,
     Quota,
 )
-from mail_core.models.mail import ActivateEmailResponse, DeactivateMailPayload, DeactivateMailResponse, DomainModel, GetEmailResponse, GetEmailsCommand, GetEmailsResponse, MailCreatePayload
-from typing import List
-from config.environment import Settings
+from mail_core.models.mail import (
+    ActivateEmailResponse,
+    DeactivateMailPayload, 
+    DeactivateMailResponse,
+    DomainModel,
+    GetEmailResponse,
+    GetEmailsCommand,
+    GetEmailsResponse,
+    MailCreatePayload
+)
 
 
 class MysqlAdapter:
@@ -45,15 +54,12 @@ class MysqlAdapter:
         ]
 
     def get_premium_domain_name(self):
-        results = (
+        result = (
             self.session.query(VirtualDomain)
             .filter(VirtualDomain.type == "premium")
-            .all()
+            .first()
         )
-        return [
-            DomainModel(name=result.name, domain_id=result.id)
-            for result in results
-        ]
+        return DomainModel(name=result.name, domain_id=result.id)
 
     def create_email(self, payload: MailCreatePayload):
         user = VirtualUser(
@@ -94,15 +100,14 @@ class MysqlAdapter:
             Quota.account_id == payload.account_id
         )
         data = {}
-        if payload.email_limit:
+        if payload.email_limit is not None:
             data.update({"email_limit": payload.email_limit})
-        if payload.custom_email_limit:
+        if payload.custom_email_limit is not None:
             data.update({"custom_email_limit": payload.custom_email_limit})
-        if payload.alias_limit:
+        if payload.alias_limit is not None:
             data.update({"alias_limit": payload.alias_limit})
         query.update(data)
         self.session.commit()
-        print(data)
 
     def update_quota_email_limit(self, payload) -> None:
         response = (

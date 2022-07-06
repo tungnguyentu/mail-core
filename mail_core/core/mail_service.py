@@ -8,6 +8,9 @@ from mail_core.core.port.outbound import MailCoreRepository
 from mail_core.models.mail import (
     ActivateEmailCommand,
     ActivateEmailResponse,
+    CreateEmailPremiumResponse,
+    CreateMailPremiumCommand,
+    CreateMailPremiumPayload,
     DeactivateMailPayload,
     DeactivateMailResponse,
     GetEmailCommand,
@@ -80,6 +83,43 @@ class MailService:
             status=1,
             email=response.email,
             expire=response.expire,
+        )
+
+    def create_premium_email(self, command: CreateMailPremiumCommand) -> CreateEmailPremiumResponse:
+        quota = self.repo.get_account_quota(command)
+        if quota.custom_email_limit == 0:
+            return CreateEmailPremiumResponse(
+                message="You have reached your email limit",
+                status=0
+            )
+        domain = self.repo.get_premium_domain_name()
+        if not domain:
+            return MailCreateFreeResponse(
+                message="No premium domains available",
+                status=0
+            )
+        email_address = f"{command.username}@{domain.name}"
+        password = self.repo.get_encrypt_password(command)
+        init_at = int(datetime.now().timestamp())
+        payload = MailCreatePayload(
+            account_id=command.account_id,
+            domain_id=domain.domain_id,
+            email=email_address,
+            password=password,
+            init_at=init_at,
+            expire=-1
+        )
+        response = self.repo.create_email(payload)
+        quota_payload = QuotaModel(
+            account_id=command.account_id,
+            custom_email_limit=quota.custom_email_limit - 1
+        )
+        self.repo.update_quota(quota_payload)
+        return CreateEmailPremiumResponse(
+            message="Create Email Success",
+            status=1,
+            account_id=response.account_id,
+            email=response.email
         )
 
     def refill(self, command: MailRefillCommand) -> MailRefillResponse:

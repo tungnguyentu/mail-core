@@ -65,7 +65,21 @@ class ActivateEmailCommand(BaseModel):
     email: EmailStr
 
 
+class CreateMailPremiumCommand(BaseModel):
+    account_id: str
+    username: str
+    password: str
+
+
 ##
+
+class CreateMailPremiumPayload(BaseModel):
+    account_id: str
+    domain_id: int
+    email: str
+    password: str
+    init_at: int
+    expire: int
 
 
 class MailCreatePayload(UserModel):
@@ -92,12 +106,18 @@ class UpdateQuotaPayload(BaseModel):
     custom_email_limit: int
     alias_limit: int
 
+##
 
 class ServiceResponse(BaseModel):
     status: Optional[int] = None
     message: Optional[str] = None
 
-##
+
+class CreateEmailPremiumResponse(ServiceResponse):
+    account_id: Optional[str]
+    email: Optional[EmailStr]
+
+
 class MailCreateFreeResponse(ServiceResponse):
     email: Optional[EmailStr]
     expire: Optional[int]

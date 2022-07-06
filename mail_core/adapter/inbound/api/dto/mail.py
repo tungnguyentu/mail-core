@@ -1,9 +1,14 @@
 from pydantic import BaseModel, EmailStr
-from typing import Optional
 
 
 class CreateFreeEmailDTO(BaseModel):
     account_id: str
+
+
+class CreatePremiumEmailDTO(BaseModel):
+    account_id: str
+    username: str
+    password: str
 
 
 class RefillDTO(BaseModel):
@@ -42,9 +47,11 @@ class UpdateQuotaDTO(BaseModel):
 class GetEmailsDTO(BaseModel):
     account_id: str
 
+
 class GetEmailDTO(BaseModel):
     account_id: str
     email: EmailStr
+
 
 class DeactivateEmailDTO(BaseModel):
     account_id: str

@@ -1,6 +1,7 @@
 from typing import Protocol
 
 from mail_core.models.mail import (
+    CreateEmailPremiumResponse,
     DeactivateMailPayload,
     DeactivateMailResponse,
     GetEmailResponse,
@@ -57,4 +58,7 @@ class MailUseCase(Protocol):
         ...
     
     def get_email(self, command) -> GetEmailResponse:
+        ...
+    
+    def create_premium_email(self, command) -> CreateEmailPremiumResponse:
         ...
