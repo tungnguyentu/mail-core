@@ -5,6 +5,10 @@ class CreateFreeEmailDTO(BaseModel):
     account_id: str
 
 
+class ClearEmailsDTO(BaseModel):
+    account_id: str
+
+
 class CreatePremiumEmailDTO(BaseModel):
     account_id: str
     username: str

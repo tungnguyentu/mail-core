@@ -71,7 +71,14 @@ class CreateMailPremiumCommand(BaseModel):
     password: str
 
 
+class ClearEmailsCommand(BaseModel):
+    account_id: str
+
 ##
+
+class ClearEmailsPayload(BaseModel):
+    account_id: str
+
 
 class CreateMailPremiumPayload(BaseModel):
     account_id: str
@@ -184,3 +191,7 @@ class GetEmailsResponse(ServiceResponse):
 class ActivateEmailResponse(ServiceResponse):
     email: Optional[EmailStr] = None
     active: Optional[int] = None
+
+
+class ClearEmailsResponse(ServiceResponse):
+    account_id: Optional[str] = None

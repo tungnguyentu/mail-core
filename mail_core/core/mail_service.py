@@ -1,13 +1,17 @@
+from genericpath import exists
 import string
 from random import shuffle, choice
 from datetime import datetime
-from typing import List
+
 
 from mail_core.utils.logger import logger
 from mail_core.core.port.outbound import MailCoreRepository
 from mail_core.models.mail import (
     ActivateEmailCommand,
     ActivateEmailResponse,
+    ClearEmailsCommand,
+    ClearEmailsPayload,
+    ClearEmailsResponse,
     CreateEmailPremiumResponse,
     CreateMailPremiumCommand,
     CreateMailPremiumPayload,
@@ -296,5 +300,21 @@ class MailService:
             expire=info.expire,
             active=info.active,
             message="Get Email Success",
+            status=1
+        )
+
+    def clear_emails(self, command: ClearEmailsCommand) -> ClearEmailsResponse:
+        exists_account = self.repo.get_account(command)
+        if not exists_account:
+            return ClearEmailsResponse(
+                message="Account doesn't have emails",
+                status=0
+            )
+        clear_payload = ClearEmailsPayload(
+            account_id=command.account_id,
+        )
+        self.repo.clear_emails(clear_payload)
+        return ClearEmailsResponse(
+            message="Clear Emails Success",
             status=1
         )

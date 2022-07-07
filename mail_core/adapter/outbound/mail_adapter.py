@@ -8,6 +8,8 @@ from mail_core.adapter.outbound.database.entities import (
 )
 from mail_core.models.mail import (
     ActivateEmailResponse,
+    ClearEmailsPayload,
+    ClearEmailsResponse,
     DeactivateMailPayload, 
     DeactivateMailResponse,
     DomainModel,
@@ -207,3 +209,19 @@ class MysqlAdapter:
             expire=result.expire,
             active=result.active,
         )
+    
+    def get_account(self, payload):
+        result = (
+            self.session.query(VirtualUser)
+            .filter(VirtualUser.id == payload.account_id)
+            .first()
+        )
+        if not result:
+            return None
+        return result
+    
+    def clear_emails(self, payload: ClearEmailsPayload):
+        self.session.query(VirtualUser).filter(
+            VirtualUser.account_id == payload.account_id,
+        ).delete()
+        self.session.commit()

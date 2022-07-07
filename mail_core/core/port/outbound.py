@@ -53,3 +53,6 @@ class MailCoreRepository(Protocol):
 
     def get_account_emails(self, payload):
         ...
+
+    def clear_emails(self, payload):
+        ...

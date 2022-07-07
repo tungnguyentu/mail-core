@@ -41,8 +41,8 @@ async def redirect_to_docs():
 if __name__ == "__main__":
     uvicorn.run(
         "main:app",
-        host=Settings.API_HOST,
-        port=Settings.API_PORT,
+        host="127.0.0.1",
+        port=5000,
         reload=True,
         debug=True,
     )
