@@ -16,7 +16,7 @@ from mail_core.adapter.inbound.api.routers import (
     get_email
 )
 
-app = FastAPI()
+app = FastAPI(title="Mail Core Service")
 
 app.include_router(get_email.router, prefix="/api/v1")
 app.include_router(get_emails.router, prefix="/api/v1")
